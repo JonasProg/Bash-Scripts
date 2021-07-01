@@ -1,0 +1,31 @@
+#!/bin/bash
+
+module load TC/gamess-uk/guk7.0
+
+zmatrix=_zmatrix.dat
+basisset=_basisset.dat
+tmpa='#' #define tmpa ! [required]
+tdir=/$tmpa
+
+echo "#begin<scf>"
+gamess << EOF >| gamess_scf.out
+title
+$molec SCF calculation (basis $basis)
+CHARGE 0
+adapt off
+nosym
+`cat $zmatrix`
+integral high
+BASIS
+`cat $basisset`
+END
+SCFTYPE MP2
+RUNTYP GRADIENT
+RUNTYP HESSIAN
+Threshold 8
+vectors extguess
+enter 1
+EOF
+echo "#end<scf>"
+
+cp gamess_scf.out /$tdir

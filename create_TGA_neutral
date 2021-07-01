@@ -1,0 +1,31 @@
+#!/bin/bash
+
+FILE="./neutral_input.dat"
+###Print Potential
+mp2=`cat gamess_scf.out | grep "total energy (mp2)" | awk '{print $4}'` 
+pot=`echo $mp2`
+### Print Geometry
+geom=`cat _zmatrix.dat | sed -n '/^geometry angstroms$/,/^end$/p' | awk '{print $1, $2, $3}' | awk '{gsub("geometry angstroms", "");print}' | awk '{gsub("end", "");print}'`
+geo=`echo $geom`
+### Print Atomic mass
+masses=`cat gamess_scf.out | sed -n -e '/Nuclear masses/,/*/ p'| awk '{print $4}'`
+mass=`echo $masses`
+### Print Hessian
+hessian=`cat gamess_scf.out | sed -n -e '/total cartesian 2nd derivative matrix/,/=========================/ p'| sed -e '/total cartesian 2nd derivative matrix/,+10d'| sed -e '/=========================/,+0d'|  sed 's/[a-z]//g'| sed 's/ [0-9] //g'|awk '{printf "%s\r\n", $0}' | sed '$d' | sed '$d' | sed "s/^[ \t]*//"` 
+
+####Print into Textfile
+/bin/cat <<EOM >$FILE
+\$geom
+$geo
+\$END
+\$atomic mass
+$mass
+\$END
+\$potential
+$pot
+\$END
+\$hessian
+$hessian
+\$END
+EOM
+
